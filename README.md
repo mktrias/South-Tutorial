@@ -14,21 +14,21 @@ Properties of South:
 
 ## Creating a new django app
 
-1) Create a virtual environment:
+**1) Create a virtual environment:**
 ```
 $ curl -O https://raw.github.com/pypa/virtualenv/master/virtualenv.py
 $ python virtualenv.py djangomeetup
 $ . djangomeetup/bin/activate
 ```
 
-2) Install Django and start a project and an app
+**2) Install Django and start a project and an app**
 ```
 $ pip install Django
 $ django-admin.py startproject mysite
 $ ./manage.py startapp main
 ```
 
-3) Edit `settings.py` so that Django recognizes your database and your app
+**3) Edit `settings.py` so that Django recognizes your database and your app**
 ```
 DATABASES = {
   'default': {
@@ -46,45 +46,45 @@ INSTALLED_APPS = (
 )
 ```
 
-4) Create `djtest` database
+**4) Create `djtest` database**
 ```
 $ ./manage.py dbshell
 psql=# CREATE DATABASE djtest; 
 ```
 
-5) Create Django tables and answer 'yes' to creating a superuser
+**5) Create Django tables and answer 'yes' to creating a superuser**
 ```
 $ ./manage.py syncdb
 ```
 
 ## Installing South
 
-1) Use pip to install
+**1) Use pip to install**
 ```
 $ pip install South
 $ pip freeze > requirements.txt
 ```
 
-2) In `settings.py` under `INSTALLED_APPS`, add `'south'`.
+**2) In `settings.py` under `INSTALLED_APPS`, add `'south'`.**
 
-3) South stores migration history in a table called `south_migrationhistory` so you'll need to run 
+**3) South stores migration history in a table called `south_migrationhistory` so you'll need to run**
 ```
 $ ./manage.py syncdb
 ```
 
 ## First Migration
 
-1) Create a model in `models.py`
+**1) Create a model in `models.py`**
 ```
 from django.db import models
 
 class Person(models.Model):
-  name = models.CharField(max_length=100)
+	name = models.CharField(max_length=100)
 	age = models.IntegerField()
 	location_enabled = models.BooleanField()
 ```
 
-2) Now, instead of using `syncdb` as you normally would, create a migration file
+**2) Now, instead of using `syncdb` as you normally would, create a migration file**
 ```
 $ ./manage.py schemamigration main --initial
 Creating migrations directory at '/Users/mktrias/Documents/DjangoMeetup/djangomeetup/mysite/main/migrations'...
@@ -93,9 +93,11 @@ Creating __init__.py in '/Users/mktrias/Documents/DjangoMeetup/djangomeetup/mysi
 Created 0001_initial.py. You can now apply this migration with: ./manage.py migrate main
 ```
 
-`0001_initial.py` is located in `mysite/main/migrations` and contains all the information about your current models, and the SQL needed to migrate backwards and forwards.
+`0001_initial.py` is located in `mysite/main/migrations` and contains all the information about your current models, and functions to generate the SQL needed to migrate backwards and forwards.
 
-3) Execute the migration
+Migration files must contain a `Migrations` class and the `forwards()` and `backwards()` methods. In theory, you could write your migrations by hand, but `schemamigration` does this for you. You may want to edit the `forwards()` function if you have dependencies or want to load data at a specific point in the migration chain. This can be extremely useful if you are using South with multiple apps that share relations in a database.
+
+**3) Execute the migration**
 ```
 $ ./manage.py migrate main
 Running migrations for main:
@@ -105,7 +107,12 @@ Running migrations for main:
 Installed 0 object(s) from 0 fixture(s)
 ```
 
-Now `main_person` is in your database (go and check). So far you haven't done anything earth-shattering, but now you are set up for auto-migrations!
+Now `main_person` is in your database (go and check).
+
+At any point you can roll back to a particular migration by typing
+```
+$ ./manage.py migrate myapp 0008
+```
 
 ## Future migrations
 
@@ -121,6 +128,15 @@ Running migrations for main:
  > main:0002_auto__add_field_person_is_active
 ```
 
+A useful option can show you which migrations exist and which have been committed (*)
+```
+$ ./manage.py migrate --list
+
+ main
+  (*) 0001_initial
+  (*) 0002_auto__add_field_person_is_active
+```
+
 ## Converting an existing app
 
 - Add `south` to `INSTALLED_APPS` in `settings.py`
@@ -131,6 +147,4 @@ If you have collaborators or are running your app on other servers:
 
 - Commit your initial migration to the VCS
 - All other users should install South as described above, make sure their models and schema are identical to the original, and then type `$ ./manage.py migrate main 0001 --fake` where `0001` should be replaced with the current migration number, and `main` should be replaced with your app name.
-
-
 
