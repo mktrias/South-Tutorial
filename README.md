@@ -25,7 +25,7 @@ $ . djangomeetup/bin/activate
 ```
 $ pip install Django
 $ django-admin.py startproject mysite
-$ python manage.py startapp main
+$ ./manage.py startapp main
 ```
 
 3) Edit `settings.py` so that Django recognizes your database and your app
@@ -48,13 +48,13 @@ INSTALLED_APPS = (
 
 4) Create `djtest` database
 ```
-$ python manage.py dbshell
+$ ./manage.py dbshell
 psql=# CREATE DATABASE djtest; 
 ```
 
 5) Create Django tables and answer 'yes' to creating a superuser
 ```
-$ python manage.py syncdb
+$ ./manage.py syncdb
 ```
 
 ## Installing South
@@ -69,32 +69,7 @@ $ pip freeze > requirements.txt
 
 3) South stores migration history in a table called `south_migrationhistory` so you'll need to run 
 ```
-$ python manage.py syncdb
-```
-
-Sample output:
-```
-(djangomeetup) mysite $ python manage.py syncdb
-Syncing...
-Creating tables ...
-Creating table south_migrationhistory
-Installing custom SQL ...
-Installing indexes ...
-Installed 0 object(s) from 0 fixture(s)
-
-Synced:
- > django.contrib.auth
- > django.contrib.contenttypes
- > django.contrib.sessions
- > django.contrib.sites
- > django.contrib.messages
- > django.contrib.staticfiles
- > main
- > south
-
-Not synced (use migrations):
- - 
-(use ./manage.py migrate to migrate these)
+$ ./manage.py syncdb
 ```
 
 ## First Migration
@@ -111,7 +86,7 @@ class Person(models.Model):
 
 2) Now, instead of using `syncdb` as you normally would, create a migration file
 ```
-$ python manage.py schemamigration main --initial
+$ ./manage.py schemamigration main --initial
 Creating migrations directory at '/Users/mktrias/Documents/DjangoMeetup/djangomeetup/mysite/main/migrations'...
 Creating __init__.py in '/Users/mktrias/Documents/DjangoMeetup/djangomeetup/mysite/main/migrations'...
  + Added model main.Person
@@ -122,7 +97,7 @@ Created 0001_initial.py. You can now apply this migration with: ./manage.py migr
 
 3) Execute the migration
 ```
-$ python manage.py migrate main
+$ ./manage.py migrate main
 Running migrations for main:
  - Migrating forwards to 0001_initial.
  > main:0001_initial
@@ -130,18 +105,32 @@ Running migrations for main:
 Installed 0 object(s) from 0 fixture(s)
 ```
 
-## Following migrations
+Now `main_person` is in your database (go and check). So far you haven't done anything earth-shattering, but now you are set up for auto-migrations!
+
+## Future migrations
 
 Next time you edit `models.py` schemamigration can autodetect what has changed since your last migration, so use the `--auto` option.
 ```
-$ python manage.py schemamigration main --auto
+$ ./manage.py schemamigration main --auto
  + Added field is_active on main.Person
 Created 0002_auto__add_field_person_is_active.py. You can now apply this migration with: ./manage.py migrate main
 $
-$ python manage.py migrate main
+$ ./manage.py migrate main
 Running migrations for main:
  - Migrating forwards to 0002_auto__add_field_person_is_active.
  > main:0002_auto__add_field_person_is_active
 ```
+
+## Converting an existing app
+
+- Add `south` to `INSTALLED_APPS` in `settings.py`
+- `$ ./manage.py syncdb` to load `south_migrationhistory` table into your database
+- `$ ./manage.py convert_to_south myapp` so that South can pretend to perform your first migration
+ 
+If you have collaborators or are running your app on other servers:
+
+- Commit your initial migration to the VCS
+- All other users should install South as described above, make sure their models and schema are identical to the original, and then type `$ ./manage.py migrate main 0001 --fake` where `0001` should be replaced with the current migration number, and `main` should be replaced with your app name.
+
 
 
