@@ -128,6 +128,8 @@ Running migrations for main:
  > main:0002_auto__add_field_person_is_active
 ```
 
+`migrate` automatically runs each of the migrate files in ascii order, hence all the 0 prefixes. If you forsee having more than 9999 migrations, feel free to prepend another zero!
+
 A useful option can show you which migrations exist and which have been committed (*)
 ```
 $ ./manage.py migrate --list
@@ -135,6 +137,10 @@ $ ./manage.py migrate --list
  main
   (*) 0001_initial
   (*) 0002_auto__add_field_person_is_active
+```
+You can update the current migration using `--update` but I usually keep each change in a separate migration. That keeps the file names reasonable.
+```
+$ ./manage.py schemamigration main --auto --update
 ```
 
 ## Converting an existing app
@@ -148,3 +154,30 @@ If you have collaborators or are running your app on other servers:
 - Commit your initial migration to the VCS
 - All other users should install South as described above, make sure their models and schema are identical to the original, and then type `$ ./manage.py migrate main 0001 --fake` where `0001` should be replaced with the current migration number, and `main` should be replaced with your app name.
 
+## Data migration
+
+Data migration is used to change the data in your database to reflect a new schema or feature. It's also useful if you are working on a project with collaborators and want to synchronize your data.
+
+As an example, let's populate the `main_person` table with some people. 
+
+First, create a 'blank' migration file. Here, `main` is the name of my app, and `main_person` is the name I'd like to give the migration file.
+```
+$ ./manage.py datamigration main main_person
+```
+Edit the migration file to look like this:
+```
+class Migration(DataMigration):
+	def forwards(self, orm):
+		p1 = orm.Person('john',12,False,False)
+		p2 = orm.Person('phil',24,True,False)
+		p1.save()
+		p2.save()
+	
+	def backwards(self, orm):
+		raise RuntimeError('Cannot reverse this migration')
+```
+Now run the migration
+```
+$ ./manage.py migrate main
+```
+Go look at the database now and you should see two new rows of data in `main_person`! 
