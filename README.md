@@ -10,10 +10,6 @@ Properties of South:
 - VCS-proof: automatically detects if someone else's migrations conflict with your own
 - You can string together migrations in order to move forwards or backwards through your database schema
 
-# General Tips
-
-Do a single migration for each atomic code change (like a bug fix) instead of spreading the migrations out into a dozen files. 
-
 # Migration Workflow
 
 ## Creating a new django app
@@ -236,3 +232,14 @@ South will then apply the missing migrations out of order, which should work bec
 
 ## Dependencies
 
+If you have a project that has multiple apps that have foreign key relationships in a single database, you'll need some help figuring out what order to run migrations. South can help out. For instance, if an app called `forum` depends on the `accounts` app having created user profiles, you can edit the `forum` migration file:
+```
+# forum/migrations/0002_post.py
+class Migration:
+	depends_on = (
+		("accounts", "0003_add_user_profile"),
+	)
+	
+	def forwards(self):
+		....
+```
