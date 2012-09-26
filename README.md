@@ -163,7 +163,9 @@ If you have collaborators or are running your app on other servers:
 
 Data migration is used to change the data in your database to reflect a new schema or feature. It's also useful if you are working on a project with collaborators and want to synchronize your data.
 
-As an example, let's populate the `main_person` table with some people. 
+### Example 1
+
+Let's populate the `main_person` table with some people. 
 
 First, create a 'blank' migration file. Here, `main` is the name of my app, and `main_person` is the name I'd like to give the migration file.
 ```
@@ -186,6 +188,21 @@ Now run the migration
 $ ./manage.py migrate main
 ```
 Go look at the database now and you should see two new rows of data in `main_person`! 
+
+### Example 2: Using Fixtures
+
+Info here: http://south.readthedocs.org/en/latest/fixtures.html
+
+If you'd like to load data from a fixture, first make a blank migration file:
+```
+$ ./manage.py datamigration myapp load_myfixture
+```
+Then edit the `forwards()` method of that file:
+```
+def forwards(self, orm):
+	from django.core.management import call_command
+	call_command("loaddata", "my_fixture.json")
+```
 
 ## Fields with `null=False`
 
