@@ -3,12 +3,16 @@ South-Tutorial
 
 South is a migration tool that works with Django projects. As you know, Django alone is very limited in that it can only update your database with `syncdb` when you add a new model class. South takes care of changes within a model such as adding and removing fields, changing data types or attributes.  
 
-Docs: http://south.readthedocs.org/en/latest/about.html
+Most of the info here has been distilled from the docs: http://south.readthedocs.org/en/latest/about.html
 
 Properties of South:
 - Database agnostic and supports five different database backends
 - VCS-proof: automatically detects if someone else's migrations conflict with your own
 - You can string together migrations in order to move forwards or backwards through your database schema
+
+# General Tips
+
+Do a single migration for each atomic code change (like a bug fix) instead of spreading the migrations out into a dozen files. 
 
 # Migration Workflow
 
@@ -138,7 +142,7 @@ $ ./manage.py migrate --list
   (*) 0001_initial
   (*) 0002_auto__add_field_person_is_active
 ```
-You can update the current migration using `--update` but I usually keep each change in a separate migration. That keeps the file names reasonable.
+You can update the current migration using `--update`. Use this to refine your changes to an atomic code change (adding a single feature, or fixing a bug)
 ```
 $ ./manage.py schemamigration main --auto --update
 ```
@@ -181,3 +185,54 @@ Now run the migration
 $ ./manage.py migrate main
 ```
 Go look at the database now and you should see two new rows of data in `main_person`! 
+
+## Fields with `null=False`
+
+If you add a column that is `NOT NULL` without setting a default value, south will ask you to enter a default value, so that the database backend doesn't complain. For example:
+```
+**models.py:**
+
+class Person(model.Models):
+	...
++	size = models.IntegerField(null=False)
+```
+Then when you migrate, south complains:
+```
+$ ./manage.py schemamigration main --auto
+ ? The field 'Person.size' does not have a default specified, yet is NOT NULL.
+ ? Since you are adding this field, you MUST specify a default
+ ? value to use for existing rows. Would you like to:
+ ?  1. Quit now, and add a default to the field in models.py
+ ?  2. Specify a one-off value to use for existing columns now
+ ? Please select a choice: 2
+ ? Please enter Python code for your one-off default value.
+ ? The datetime module is available, so you can do e.g. datetime.date.today()
+ >>> 1
+ + Added field size on main.Person
+Created 0004_auto__add_field_person_size.py.
+```
+
+NOTE: South detects **some** changes to fields (such as adding `unique=True`) but not all changes. For instance, adding `null=False` does not get detected. A full list of autodetected changes is here: http://south.readthedocs.org/en/latest/autodetector.html#autodetector-supported-actions
+
+NOTE 2: You cannot use any custom defined methods within your models through South migrations.
+
+## Custom Fields
+
+You can have them! See here: http://south.readthedocs.org/en/latest/tutorial/part4.html
+
+## Working with teams and a VCS
+
+If you notice any migration files when you do a pull, you should do a `./manage.py migrate myapp`. If you have made conflicting changes in the same timeslot as your co-worker, south will detect this and let you know:
+```
+Inconsistent migration history
+The following options are available:
+	--merge: will just attempt the migration ignoring any potential dependency conflicts.
+```
+If you've both been working on the same `models.py` file, you'll likely have to resolve conflicts by hand. And you probably should have communicated about this beforehand :) If you're working on separate apps, you can try:
+```
+$ ./manage.py migrate main --merge
+```
+South will then apply the missing migrations out of order, which should work because the migrations are independent.
+
+## Dependencies
+
