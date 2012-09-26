@@ -93,7 +93,7 @@ Creating __init__.py in '/Users/mktrias/Documents/DjangoMeetup/djangomeetup/mysi
 Created 0001_initial.py. You can now apply this migration with: ./manage.py migrate main
 ```
 
-`0001_initial.py` is located in `mysite/main/migrations` and contains all the information about your current models, and functions to generate the SQL needed to migrate backwards and forwards.
+`0001_initial.py` is located in `mysite/main/migrations` and contains a 'frozen' serialization of your current models, as well as `forwards()` and `backwards()` methods which generate the database-agnostic commands needed to migrate forwards or roll back.
 
 Migration files must contain a `Migrations` class and the `forwards()` and `backwards()` methods. In theory, you could write your migrations by hand, but `schemamigration` does this for you. You may want to edit the `forwards()` function if you have dependencies or want to load data at a specific point in the migration chain. This can be extremely useful if you are using South with multiple apps that share relations in a database.
 
