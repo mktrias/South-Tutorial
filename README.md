@@ -1,9 +1,14 @@
 South-Tutorial
 ==============
 
-South is a migration tool that works with Django projects. As you know, Django alone is very limited in that it can only update your database with `syncdb` when you add a new model class. South takes care of changes within a model such as adding and removing fields, changing data types or attributes.  
+South is a migration tool that works with Django projects. It can handle:
 
-Most of the info here has been distilled from the docs: http://south.readthedocs.org/en/latest/about.html
+- Schema migration
+- Data migration
+
+It replaces the Django `syncdb` command, which is limited to adding models, and cannot handle adding fields or removing models.
+
+Most of the info below has been distilled from the docs: http://south.readthedocs.org/en/latest/about.html
 
 Properties of South:
 - Database agnostic and supports five different database backends
