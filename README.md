@@ -1,7 +1,7 @@
 South-Tutorial
 ==============
 
-South is a migration tool that works with Django projects. It can handle:
+South is a migration tool that works with Django projects. You should use it. It can handle:
 
 - Schema migration
 - Data migration
